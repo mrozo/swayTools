@@ -2,6 +2,7 @@
 import subprocess
 import json
 import datetime
+import time
 
 def subscribe(eventTypes, changes=None):
     eventTypesArg="[\"" + "\",\"".join(eventTypes) + "\"]"
@@ -42,13 +43,22 @@ def setBorder(window, border):
     
 if __name__ == "__main__":
     originalBorders={}
-    for e in subscribe(['window'], ['focus','close']):
+    for e in subscribe(['window'], ['focus','close','title']):
         print(f"{datetime.datetime.now()} : {e['change']}")
         
         if e['change'] == 'close' and e['container']['id'] in originalBorders.keys():
             del originalBorders[e['container']['id']]
             continue
-        
+
+        if e['change'] == 'title':
+            if e['container']['id'] not in originalBorders.keys():
+                time.sleep(0.05) # yep, thats dumb but it works
+                window = list(filter(lambda w: w['focused'], getWindowsOnActiveWorkspace()))
+                if len(window):
+                    window=window[0]
+                    print(f"window {window['id']} - border={window['border']}")
+                    originalBorders[window['id']] = window['border']
+            continue
         focused=e['container']
         windows=getWindowsOnActiveWorkspace()
         if len(windows) == 1:
