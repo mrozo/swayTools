@@ -40,7 +40,26 @@ def getWindowsOnActiveWorkspace(windows=None):
 def setBorder(window, border):
     subprocess.run(['swaymsg', f"[con_id={window['id']}] border {border}"])
 
-    
+def setBordersOnWorkspace(windows):
+    if len(windows) == 1:
+        setBorder(windows[0], 'none')
+        if windows[0]['id'] not in originalBorders.keys():
+            originalBorders[windows[0]['id']] = windows[0]['border']
+    else:
+        for window in windows:
+            if window['id'] in originalBorders.keys():
+                print(f"window '{window['id']} set border '{originalBorders[window['id']]}'")
+                setBorder(windows[0], originalBorders[window['id']])
+
+
+def saveOriginalBorder():
+    window = list(filter(lambda w: w['focused'], getWindowsOnActiveWorkspace()))
+    if len(window):
+        window = window[0]
+        print(f"window {window['id']} - border={window['border']}")
+        originalBorders[window['id']] = window['border']
+
+
 if __name__ == "__main__":
     originalBorders={}
     for e in subscribe(['window'], ['focus','close','title']):
@@ -48,28 +67,12 @@ if __name__ == "__main__":
         
         if e['change'] == 'close' and e['container']['id'] in originalBorders.keys():
             del originalBorders[e['container']['id']]
-            continue
-
-        if e['change'] == 'title':
+        elif e['change'] == 'title':
             if e['container']['id'] not in originalBorders.keys():
-                time.sleep(0.05) # yep, thats dumb but it works
-                window = list(filter(lambda w: w['focused'], getWindowsOnActiveWorkspace()))
-                if len(window):
-                    window=window[0]
-                    print(f"window {window['id']} - border={window['border']}")
-                    originalBorders[window['id']] = window['border']
-            continue
-        focused=e['container']
-        windows=getWindowsOnActiveWorkspace()
-        if len(windows) == 1:
-            setBorder(windows[0], 'none')
-            if windows[0]['id'] not in originalBorders.keys():
-                originalBorders[windows[0]['id']] = windows[0]['border']
+                time.sleep(0.05)  # yep, thats dumb but it works
+                saveOriginalBorder()
         else:
-            for window in windows:
-                if window['id'] in originalBorders.keys():
-                    print(f"window '{window['id']} set border '{originalBorders[window['id']]}'")
-                    setBorder(windows[0], originalBorders[window['id']])
+            setBordersOnWorkspace(getWindowsOnActiveWorkspace())
                 
         
         
