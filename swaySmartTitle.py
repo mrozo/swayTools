@@ -2,7 +2,6 @@
 import json
 import subprocess
 import time
-from functools import partial
 
 
 def match_event(event, changes=None):
@@ -82,5 +81,6 @@ def dispatch_event(e, original_borders):
 
 
 if __name__ == "__main__":
-    event_loop = partial(dispatch_event, original_borders={})
-    list(map(event_loop, subscribe(['window'], ['focus', 'close', 'title'])))
+    original_borders = {}
+    for event in subscribe(['window'], ['focus', 'close', 'title']):
+        dispatch_event(event, original_borders)

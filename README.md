@@ -1,5 +1,5 @@
 # swayTools
-Repository for sway window manager related tools. Feel free to test, report bugs and send featre requests.
+Repository for sway window manager related tools. Feel free to test, report bugs and send feature requests.
 
 ## swaySmartTitle.py
 
